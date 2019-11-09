@@ -1,0 +1,144 @@
+from tkinter import *
+from random import randint, choice
+import time
+import math
+
+
+
+class Ball:
+    def __init__(self, canvas):
+        global colors
+        x = randint(0, 300)
+        y = randint(0, 300)
+        r = randint(10, 30)
+        self.x = x
+        self.y = y
+        self.r = r
+        self.deltax = randint(-5 , 5)
+        self.deltay = randint(-5 , 5)
+        self.canvas = canvas
+        self.ball = canvas.create_oval(self.x - self.r, self.y - self.r, self.x + self.r, self.y + self.r, fill= choice(colors))
+    def move_ball(self):
+        global width1, height1
+        self.x += self.deltax
+        self.y += self.deltay
+
+        if self.x < 0:
+            self.deltax = randint(0, 5)
+        if self.x > width1:
+            self.deltax = randint(-5, 0)
+        if self.y < 0:
+            self.deltay = randint(0, 5)
+        if self.y > height1:
+            self.deltay = randint(-5, 0)
+            
+        self.canvas.move(self.ball, self.deltax, self.deltay)
+        self.canvas.after(50, self.move_ball)
+    def click(self, event):
+        global score, record
+        w = ((event.x - self.x)**2 + (event.y - self.y)**2)**(0.5)
+        if w < self.r:
+            score += 1
+            if score > record:
+                record = score
+                top = open("top.dat", 'w')
+                top.write(str(score))
+                top.close()
+            label['text'] = "Счет = " + str(score) + " Рекорд = " + str(record)
+            canvas.delete(self.ball)
+            self.__init__(canvas) 
+
+
+class Boss:
+    def __init__(self, canvas):
+        global colors
+        x = randint(0, 300)
+        y = randint(0, 300)
+        r = randint(10, 30)
+        flag = randint(0, 1)
+        self.x = x
+        self.y = y
+        self.r = r
+        if flag == 0:
+            self.deltax = 20
+            self.deltay = 0
+        if flag == 1:
+            self.deltax = 0
+            self.deltay = 20
+        self.canvas = canvas
+        self.boss = canvas.create_oval(self.x - 2*self.r, self.y - self.r, self.x + self.r, self.y + self.r, fill= choice(colors))
+    def move_boss(self):
+        global width1, height1
+        self.x += self.deltax
+        self.y += self.deltay
+
+        if self.x < 0:
+            self.deltax = randint(20, 30)
+        if self.x > width1:
+            self.deltax = randint(-30, -20)
+        if self.y < 0:
+            self.deltay = randint(20, 30)
+        if self.y > height1:
+            self.deltay = randint(-30, -20)
+            
+        self.canvas.move(self.boss, self.deltax, self.deltay)
+        self.canvas.after(50, self.move_boss)
+    def click(self, event):
+        global score, record
+        w = ((event.x - self.x)**2 + (event.y - self.y)**2)**(0.5)
+        if w < self.r:
+            score += 3
+            if score > record:
+                record = score
+                top = open("top.dat", 'w')
+                top.write(str(score))
+                top.close()
+            label['text'] = "Счет = " + str(score) + " Рекорд = " + str(record)
+            canvas.delete(self.boss)
+            self.__init__(canvas) 
+        
+def click2(event):
+    global score
+    temp = score
+    ball1.click(event)
+    ball2.click(event)
+    boss.click(event)
+    if temp == score:
+        score -=1
+        label['text'] = "Счет = " + str(score) + " Рекорд = " + str(record)
+        
+    
+
+width1 = 1000
+height1 = 600
+root = Tk()
+root.title("Balls")
+root.resizable(False, False)
+canvas = Canvas(root, width = width1, height = height1, bg = 'gray')
+canvas.pack()
+colors = ['red', 'orange', 'yellow', 'green', 'blue']
+
+score = 0
+record = 0
+
+ball1 = Ball(canvas)
+ball2 = Ball(canvas)
+boss = Boss(canvas)
+ball1.move_ball()
+ball2.move_ball()
+boss.move_boss()
+
+canvas.bind('<Button-1>', click2)
+top = open("top.dat", 'r')
+arr = top.readline()
+top.close();
+if arr != "":
+    if int(arr[0]) > record:
+        record = int(arr)
+
+label = Label(text = score, justify = LEFT)
+label.pack()
+label['text'] = "Счет = " + str(score) + " Рекорд = " + str(record)
+
+root.mainloop()
+        
